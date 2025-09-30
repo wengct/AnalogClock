@@ -14,6 +14,9 @@ function createMinuteMarkers() {
     }
 }
 
+// 儲存上一次的秒針角度以處理跨零點的情況
+let lastSecondAngle = 0;
+
 // 更新時鐘
 function updateClock() {
     const now = new Date();
@@ -31,8 +34,22 @@ function updateClock() {
     // 時針：每小時轉30度 (360/12 = 30)，每分鐘轉0.5度
     const hourAngle = hours * 30 + minutes * 0.5;
     
-    // 應用轉換
-    secondHand.style.transform = `rotate(${secondAngle}deg)`;
+    // 處理秒針從59秒跳到0秒的情況，避免反向旋轉
+    if (lastSecondAngle > 300 && secondAngle < 60) {
+        // 暫時停用轉場效果
+        secondHand.style.transition = 'none';
+        secondHand.style.transform = `rotate(${secondAngle}deg)`;
+        
+        // 強制重繪後恢復轉場效果
+        secondHand.offsetHeight; // 觸發重繪
+        secondHand.style.transition = 'transform 0.05s ease-in-out';
+    } else {
+        secondHand.style.transform = `rotate(${secondAngle}deg)`;
+    }
+    
+    lastSecondAngle = secondAngle;
+    
+    // 應用其他指針的轉換
     minuteHand.style.transform = `rotate(${minuteAngle}deg)`;
     hourHand.style.transform = `rotate(${hourAngle}deg)`;
 }
